@@ -105,11 +105,7 @@ impl IrmaClient {
     pub async fn status(&self, token: &SessionToken) -> Result<SessionStatus, Error> {
         Ok(self
             .client
-            .get(
-                self.url
-                    .join(&format!("session/{}/status", token.0))
-                    .unwrap(),
-            )
+            .get(self.url.join(&format!("session/{}/status", token.0))?)
             .send()
             .await?
             .error_for_status()?
@@ -120,7 +116,7 @@ impl IrmaClient {
     /// Cancel a previously started session
     pub async fn cancel(&self, token: &SessionToken) -> Result<(), Error> {
         self.client
-            .delete(self.url.join(&format!("session/{}", token.0)).unwrap())
+            .delete(self.url.join(&format!("session/{}", token.0))?)
             .send()
             .await?
             .error_for_status()?;
@@ -131,11 +127,7 @@ impl IrmaClient {
     pub async fn result(&self, token: &SessionToken) -> Result<SessionResult, Error> {
         let result = self
             .client
-            .get(
-                self.url
-                    .join(&format!("session/{}/result", token.0))
-                    .unwrap(),
-            )
+            .get(self.url.join(&format!("session/{}/result", token.0))?)
             .send()
             .await?
             .error_for_status()?
