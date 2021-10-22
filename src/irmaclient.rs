@@ -39,7 +39,7 @@ pub struct SessionData {
 
 /// Token used to identify individual sessions on the server
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SessionToken(String);
+pub struct SessionToken(pub String);
 
 // We manually implement debug to protect against accidentally leaking the secret through debug printing.
 impl Debug for TokenSecret {
