@@ -175,6 +175,10 @@ impl BaseRequestBuilder {
         self.base
     }
 
+    fn add_discons(&mut self, mut discons: ConDisCon) {
+        self.base.disclose.append(&mut discons);
+    }
+
     fn add_discon(&mut self, discon: Vec<Vec<AttributeRequest>>) {
         self.base.disclose.push(discon);
     }
@@ -233,6 +237,12 @@ impl DisclosureRequestBuilder {
         self
     }
 
+    /// Add multiple additional disjunctions to the request
+    pub fn add_discons(mut self, discons: ConDisCon) -> DisclosureRequestBuilder {
+        self.base.add_discons(discons);
+        self
+    }
+
     /// Add an additional labeled disjunction to the request
     pub fn add_discon_with_label(
         mut self,
@@ -283,6 +293,12 @@ impl SignatureRequestBuilder {
     /// Add an additional disjunction to the request
     pub fn add_discon(mut self, discon: Vec<Vec<AttributeRequest>>) -> SignatureRequestBuilder {
         self.base.add_discon(discon);
+        self
+    }
+
+    /// Add multiple additional disjunctions to the request
+    pub fn add_discons(mut self, discons: ConDisCon) -> SignatureRequestBuilder {
+        self.base.add_discons(discons);
         self
     }
 
@@ -343,6 +359,12 @@ impl IssuanceRequestBuilder {
     /// Add an additional disjunction to the request
     pub fn add_discon(mut self, discon: Vec<Vec<AttributeRequest>>) -> IssuanceRequestBuilder {
         self.base.add_discon(discon);
+        self
+    }
+
+    /// Add multiple additional disjunctions to the request
+    pub fn add_discons(mut self, discons: ConDisCon) -> IssuanceRequestBuilder {
+        self.base.add_discons(discons);
         self
     }
 
