@@ -32,7 +32,8 @@ pub struct Qr {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionData {
     /// The data for the QR to be shown to the end user
-    pub qr: Qr,
+    #[serde(rename = "sessionPtr")]
+    pub session_ptr: Qr,
     /// The token for further interaction with the session
     pub token: SessionToken,
 }
