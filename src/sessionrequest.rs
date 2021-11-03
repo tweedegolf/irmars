@@ -17,6 +17,7 @@ fn omit_false(value: &bool) -> bool {
 
 /// Representation of a request for a single specific attribute
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 #[serde(untagged)]
 pub enum AttributeRequest {
     /// Request for any value of the named attribute
@@ -27,7 +28,7 @@ pub enum AttributeRequest {
         #[serde(rename = "type")]
         attr_type: String,
         /// The required value, if any
-        #[serde(skip_serializing_if = "Option::is_none", default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         value: Option<String>,
         /// Is a no-value result is acceptable?
         #[serde(rename = "notNull", skip_serializing_if = "omit_false", default)]
@@ -60,6 +61,7 @@ impl AttributeRequest {
 /// Description of an IRMA credential to be issued.
 /// The issuing IRMA server requires the private key of the issuer to be present to be able to issue a credential.
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct Credential {
     /// Identifier of the credential to be issued
     pub credential: String,
@@ -114,23 +116,33 @@ impl CredentialBuilder {
 
 /// Information common between all types of requests
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct BaseRequest {
     /// Con-dis-con of attributes to be disclosed
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub disclose: ConDisCon,
     /// For mobile sessions, URL to redirect user to after completion of the session.
     #[serde(rename = "clientReturnUrl", skip_serializing_if = "Option::is_none")]
     pub return_url: Option<String>,
     /// Have the irma server include the session token in the client return url. (see irma.app/docs for more details)
-    #[serde(rename = "augmentReturnUrl", skip_serializing_if = "omit_false")]
+    #[serde(
+        rename = "augmentReturnUrl",
+        skip_serializing_if = "omit_false",
+        default
+    )]
     pub augment_return: bool,
     /// Labels for the disjunctions in the disclosure request
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(
+        skip_serializing_if = "HashMap::is_empty",
+        default,
+        deserialize_with = "crate::util::de_int_key"
+    )]
     pub labels: HashMap<usize, TranslatedString>,
 }
 
 /// IRMA session requests
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 #[serde(tag = "@context")]
 pub enum IrmaRequest {
     /// Request for the disclosure of some set of attributes
@@ -394,6 +406,7 @@ impl IssuanceRequestBuilder {
 /// An IRMA request extended with extra information for the server on how to execute it.
 /// (Note: this interface is unstable, and might change significantly in the future)
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct ExtendedIrmaRequest {
     /// How long a session result JWT should be valid once requested, in seconds
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -425,17 +438,29 @@ mod tests {
     fn test_attribute_request() {
         let attr1 = AttributeRequest::Simple("a.b.c.d".into());
         assert_eq!("\"a.b.c.d\"", serde_json::to_string(&attr1).unwrap());
+        assert_eq!(
+            attr1,
+            serde_json::from_str(&serde_json::to_string(&attr1).unwrap()).unwrap()
+        );
 
         let attr2 = AttributeRequest::non_null("x.y.z.d".into());
         assert_eq!(
             "{\"type\":\"x.y.z.d\",\"notNull\":true}",
             serde_json::to_string(&attr2).unwrap()
         );
+        assert_eq!(
+            attr2,
+            serde_json::from_str(&serde_json::to_string(&attr2).unwrap()).unwrap()
+        );
 
         let attr3 = AttributeRequest::with_value("f.g.h.i".into(), "testvalue".into());
         assert_eq!(
             "{\"type\":\"f.g.h.i\",\"value\":\"testvalue\"}",
             serde_json::to_string(&attr3).unwrap()
+        );
+        assert_eq!(
+            attr3,
+            serde_json::from_str(&serde_json::to_string(&attr3).unwrap()).unwrap()
         );
     }
 
@@ -448,6 +473,11 @@ mod tests {
             "{\"credential\":\"a.b.c\",\"attributes\":{\"d\":\"e\"}}",
             serde_json::to_string(&cred1).unwrap()
         );
+        assert_eq!(
+            cred1,
+            serde_json::from_str(&serde_json::to_string(&cred1).unwrap()).unwrap()
+        );
+
         let cred2 = CredentialBuilder::new("a.b.c".into())
             .validity_period(Duration::new(300, 0))
             .attribute("d".into(), "e".into())
@@ -459,6 +489,10 @@ mod tests {
             ),
             serde_json::to_string(&cred2).unwrap()
         );
+        assert_eq!(
+            cred2,
+            serde_json::from_str(&serde_json::to_string(&cred2).unwrap()).unwrap()
+        );
     }
 
     #[test]
@@ -467,6 +501,10 @@ mod tests {
             .add_discon(vec![vec![AttributeRequest::Simple("a.b.c.d".into())]])
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/disclosure/v2\",\"disclose\":[[[\"a.b.c.d\"]]]}", serde_json::to_string(&req1).unwrap());
+        assert_eq!(
+            req1,
+            serde_json::from_str(&serde_json::to_string(&req1).unwrap()).unwrap()
+        );
 
         let req2 = DisclosureRequestBuilder::new()
             .add_discon(vec![vec![AttributeRequest::non_null("x.y.z.w".into())]])
@@ -479,18 +517,30 @@ mod tests {
             )
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/disclosure/v2\",\"disclose\":[[[{\"type\":\"x.y.z.w\",\"notNull\":true}]],[[\"a.b.c.d\"]]],\"labels\":{\"1\":{\"en\":\"en\",\"nl\":\"nl\"}}}", serde_json::to_string(&req2).unwrap());
+        assert_eq!(
+            req2,
+            serde_json::from_str(&serde_json::to_string(&req2).unwrap()).unwrap()
+        );
 
         let req3 = DisclosureRequestBuilder::new()
             .add_discon(vec![vec![AttributeRequest::Simple("a.b.c.d".into())]])
             .return_url("https://example.com".into())
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/disclosure/v2\",\"disclose\":[[[\"a.b.c.d\"]]],\"clientReturnUrl\":\"https://example.com\"}", serde_json::to_string(&req3).unwrap());
+        assert_eq!(
+            req3,
+            serde_json::from_str(&serde_json::to_string(&req3).unwrap()).unwrap()
+        );
 
         let req4 = DisclosureRequestBuilder::new()
             .add_discon(vec![vec![AttributeRequest::Simple("a.b.c.d".into())]])
             .augmented_return_url("https://example.com".into())
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/disclosure/v2\",\"disclose\":[[[\"a.b.c.d\"]]],\"clientReturnUrl\":\"https://example.com\",\"augmentReturnUrl\":true}", serde_json::to_string(&req4).unwrap());
+        assert_eq!(
+            req4,
+            serde_json::from_str(&serde_json::to_string(&req4).unwrap()).unwrap()
+        );
     }
 
     #[test]
@@ -499,6 +549,10 @@ mod tests {
             .add_discon(vec![vec![AttributeRequest::Simple("a.b.c.d".into())]])
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/signature/v2\",\"message\":\"testmessage\",\"disclose\":[[[\"a.b.c.d\"]]]}", serde_json::to_string(&req1).unwrap());
+        assert_eq!(
+            req1,
+            serde_json::from_str(&serde_json::to_string(&req1).unwrap()).unwrap()
+        );
 
         let req2 = SignatureRequestBuilder::new("testmessage".into())
             .add_discon_with_label(
@@ -510,18 +564,30 @@ mod tests {
             )
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/signature/v2\",\"message\":\"testmessage\",\"disclose\":[[[\"a.b.c.d\"]]],\"labels\":{\"0\":{\"en\":\"en\",\"nl\":\"nl\"}}}", serde_json::to_string(&req2).unwrap());
+        assert_eq!(
+            req2,
+            serde_json::from_str(&serde_json::to_string(&req2).unwrap()).unwrap()
+        );
 
         let req3 = SignatureRequestBuilder::new("testmessage".into())
             .add_discon(vec![vec![AttributeRequest::Simple("a.b.c.d".into())]])
             .return_url("https://example.com".into())
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/signature/v2\",\"message\":\"testmessage\",\"disclose\":[[[\"a.b.c.d\"]]],\"clientReturnUrl\":\"https://example.com\"}", serde_json::to_string(&req3).unwrap());
+        assert_eq!(
+            req3,
+            serde_json::from_str(&serde_json::to_string(&req3).unwrap()).unwrap()
+        );
 
         let req4 = SignatureRequestBuilder::new("testmessage".into())
             .add_discon(vec![vec![AttributeRequest::Simple("a.b.c.d".into())]])
             .augmented_return_url("https://example.com".into())
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/signature/v2\",\"message\":\"testmessage\",\"disclose\":[[[\"a.b.c.d\"]]],\"clientReturnUrl\":\"https://example.com\",\"augmentReturnUrl\":true}", serde_json::to_string(&req4).unwrap());
+        assert_eq!(
+            req4,
+            serde_json::from_str(&serde_json::to_string(&req4).unwrap()).unwrap()
+        );
     }
 
     #[test]
@@ -536,6 +602,10 @@ mod tests {
             })
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/issuance/v2\",\"credentials\":[{\"credential\":\"a.b.c\",\"validity\":123456789,\"attributes\":{\"d\":\"e\"}}]}", serde_json::to_string(&req1).unwrap());
+        assert_eq!(
+            req1,
+            serde_json::from_str(&serde_json::to_string(&req1).unwrap()).unwrap()
+        );
 
         let req2 = IssuanceRequestBuilder::new()
             .add_discon(vec![vec![AttributeRequest::Simple("x.y.z.w".into())]])
@@ -548,6 +618,10 @@ mod tests {
             })
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/issuance/v2\",\"credentials\":[{\"credential\":\"a.b.c\",\"validity\":123456789,\"attributes\":{\"d\":\"e\"}}],\"disclose\":[[[\"x.y.z.w\"]]]}", serde_json::to_string(&req2).unwrap());
+        assert_eq!(
+            req2,
+            serde_json::from_str(&serde_json::to_string(&req2).unwrap()).unwrap()
+        );
 
         let req3 = IssuanceRequestBuilder::new()
             .add_discon_with_label(
@@ -566,6 +640,10 @@ mod tests {
             })
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/issuance/v2\",\"credentials\":[{\"credential\":\"a.b.c\",\"validity\":123456789,\"attributes\":{\"d\":\"e\"}}],\"disclose\":[[[\"x.y.z.w\"]]],\"labels\":{\"0\":{\"en\":\"en\",\"nl\":\"nl\"}}}", serde_json::to_string(&req3).unwrap());
+        assert_eq!(
+            req3,
+            serde_json::from_str(&serde_json::to_string(&req3).unwrap()).unwrap()
+        );
 
         let req4 = IssuanceRequestBuilder::new()
             .add_credential(Credential {
@@ -578,6 +656,10 @@ mod tests {
             .return_url("https://example.com".into())
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/issuance/v2\",\"credentials\":[{\"credential\":\"a.b.c\",\"validity\":123456789,\"attributes\":{\"d\":\"e\"}}],\"clientReturnUrl\":\"https://example.com\"}", serde_json::to_string(&req4).unwrap());
+        assert_eq!(
+            req4,
+            serde_json::from_str(&serde_json::to_string(&req4).unwrap()).unwrap()
+        );
 
         let req5 = IssuanceRequestBuilder::new()
             .add_credential(Credential {
@@ -590,6 +672,10 @@ mod tests {
             .augmented_return_url("https://example.com".into())
             .build();
         assert_eq!("{\"@context\":\"https://irma.app/ld/request/issuance/v2\",\"credentials\":[{\"credential\":\"a.b.c\",\"validity\":123456789,\"attributes\":{\"d\":\"e\"}}],\"clientReturnUrl\":\"https://example.com\",\"augmentReturnUrl\":true}", serde_json::to_string(&req5).unwrap());
+        assert_eq!(
+            req5,
+            serde_json::from_str(&serde_json::to_string(&req5).unwrap()).unwrap()
+        );
 
         let req6 = IssuanceRequestBuilder::new()
             .add_credential(Credential {
@@ -600,6 +686,10 @@ mod tests {
                 ],
             })
             .build();
-        assert_eq!("{\"@context\":\"https://irma.app/ld/request/issuance/v2\",\"credentials\":[{\"credential\":\"a.b.c\",\"attributes\":{\"d\":\"e\"}}]}", serde_json::to_string(&req6).unwrap())
+        assert_eq!("{\"@context\":\"https://irma.app/ld/request/issuance/v2\",\"credentials\":[{\"credential\":\"a.b.c\",\"attributes\":{\"d\":\"e\"}}]}", serde_json::to_string(&req6).unwrap());
+        assert_eq!(
+            req6,
+            serde_json::from_str(&serde_json::to_string(&req6).unwrap()).unwrap()
+        );
     }
 }
