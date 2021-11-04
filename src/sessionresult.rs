@@ -5,60 +5,46 @@ use serde::{Deserialize, Serialize};
 /// Status of an disclosed attribute
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AttributeStatus {
-    #[serde(rename = "PRESENT")]
     Present,
-    #[serde(rename = "EXTRA")]
     Extra,
-    #[serde(rename = "NULL")]
     Null,
 }
 
 /// Status of an IRMA proof
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ProofStatus {
-    #[serde(rename = "VALID")]
     Valid,
-    #[serde(rename = "INVALID")]
     Invalid,
-    #[serde(rename = "INVALID_TIMESTAMP")]
     InvalidTimestamp,
-    #[serde(rename = "UNMATCHED_REQUEST")]
     UnmatchedRequest,
-    #[serde(rename = "MISSING_ATTRIBUTES")]
     MissingAttributes,
-    #[serde(rename = "EXPIRED")]
     Expired,
 }
 
 /// Status of an IRMA session
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SessionStatus {
-    #[serde(rename = "INITIALIZED")]
     Initialized,
-    #[serde(rename = "PAIRING")]
     Pairing,
-    #[serde(rename = "CONNECTED")]
     Connected,
-    #[serde(rename = "CANCELLED")]
     Cancelled,
-    #[serde(rename = "DONE")]
     Done,
-    #[serde(rename = "TIMEOUT")]
     Timeout,
 }
 
 /// Type of an IRMA session
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
+#[serde(rename_all = "lowercase")]
 pub enum SessionType {
-    #[serde(rename = "disclosing")]
     Disclosing,
-    #[serde(rename = "signing")]
     Signing,
-    #[serde(rename = "issuing")]
     Issuing,
 }
 
