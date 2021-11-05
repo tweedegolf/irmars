@@ -255,7 +255,7 @@ mod tests {
         let expected = SessionResult {
             sessiontype: SessionType::Signing,
             status: SessionStatus::Done,
-            disclosed: vec![vec![DisclosedAttribute{
+            disclosed: vec![vec![DisclosedAttribute {
                 status: AttributeStatus::Present,
                 raw_value: Some("Testtown".into()),
                 value: Some(TranslatedString {
