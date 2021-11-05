@@ -68,10 +68,14 @@ pub struct SessionResult {
     /// Token of the session
     pub token: SessionToken,
     #[serde(rename = "type")]
+    /// Type of the session (disclosure/issuance/signature)
     pub sessiontype: SessionType,
+    /// Current state of the session
     pub status: SessionStatus,
+    /// Status of the proof provided by the irma client (if it has already provided proofs)
     #[serde(rename = "proofStatus", skip_serializing_if = "Option::is_none")]
     pub proof_status: Option<ProofStatus>,
+    /// Attributes disclosed by the irma client to the server
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub disclosed: Vec<Vec<DisclosedAttribute>>,
 }
