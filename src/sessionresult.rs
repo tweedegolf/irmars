@@ -3,8 +3,7 @@ use crate::{irmaclient::SessionToken, util::TranslatedString};
 use serde::{Deserialize, Serialize};
 
 /// Status of an disclosed attribute
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[cfg_attr(test, derive(PartialEq))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AttributeStatus {
     Present,
@@ -13,8 +12,7 @@ pub enum AttributeStatus {
 }
 
 /// Status of an IRMA proof
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[cfg_attr(test, derive(PartialEq))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ProofStatus {
     Valid,
@@ -26,8 +24,7 @@ pub enum ProofStatus {
 }
 
 /// Status of an IRMA session
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[cfg_attr(test, derive(PartialEq))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SessionStatus {
     Initialized,
@@ -39,8 +36,7 @@ pub enum SessionStatus {
 }
 
 /// Type of an IRMA session
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[cfg_attr(test, derive(PartialEq))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum SessionType {
     Disclosing,
