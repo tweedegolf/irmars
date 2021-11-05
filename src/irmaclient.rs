@@ -139,7 +139,7 @@ impl IrmaClient {
             SessionStatus::Done => Ok(result),
             SessionStatus::Cancelled => Err(Error::SessionCancelled),
             SessionStatus::Timeout => Err(Error::SessionTimedOut),
-            _ => Err(Error::SessionNotFinished),
+            status => Err(Error::SessionNotFinished(status)),
         }
     }
 }

@@ -39,7 +39,7 @@ async fn main() {
     loop {
         match client.result(&session.token).await {
             Ok(_) => break,
-            Err(irma::Error::SessionNotFinished) => {}
+            Err(irma::Error::SessionNotFinished(_)) => {}
             Err(v) => panic!("{}", v),
         }
 

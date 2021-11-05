@@ -12,5 +12,5 @@ pub enum Error {
     #[error("Irma session timed out")]
     SessionTimedOut,
     #[error("Irma session not finished")]
-    SessionNotFinished,
+    SessionNotFinished(super::sessionresult::SessionStatus),
 }
