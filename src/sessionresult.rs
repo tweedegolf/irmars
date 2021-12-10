@@ -78,6 +78,9 @@ pub struct SessionResult {
     /// Attributes disclosed by the irma client to the server
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub disclosed: Vec<Vec<DisclosedAttribute>>,
+    /// The full signature, if this was a signing session, as parsed json.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signature: Option<serde_json::Value>,
 }
 
 #[cfg(test)]
@@ -127,6 +130,7 @@ mod tests {
             }]],
             proof_status: Some(ProofStatus::Valid),
             token: SessionToken("ELMExi5iauWYHzbH7gwU".into()),
+            signature: None,
         };
 
         assert_eq!(result, expected);
@@ -152,6 +156,7 @@ mod tests {
             disclosed: vec![],
             proof_status: None,
             token: SessionToken("ELMExi5iauWYHzbH7gwU".into()),
+            signature: None,
         };
 
         assert_eq!(result, expected);
@@ -178,6 +183,7 @@ mod tests {
             disclosed: vec![],
             proof_status: Some(ProofStatus::Valid),
             token: SessionToken("bVqg9btHRhiMvEWs8axQ".into()),
+            signature: None,
         };
 
         assert_eq!(result, expected);
@@ -186,7 +192,7 @@ mod tests {
             serde_json::from_str(&serde_json::to_string(&expected).unwrap()).unwrap()
         );
 
-        let result = serde_json::from_str::<SessionResult>(
+        let mut result = serde_json::from_str::<SessionResult>(
             r#"
             {
                 "token": "5bTpPRXctenYGGsZVe3x",
@@ -270,7 +276,12 @@ mod tests {
             }]],
             proof_status: Some(ProofStatus::Valid),
             token: SessionToken("5bTpPRXctenYGGsZVe3x".into()),
+            signature: None,
         };
+
+        // Ignore signature as we are not fully parsing that
+        assert!(result.signature.is_some());
+        result.signature = None;
 
         assert_eq!(result, expected);
         assert_eq!(
