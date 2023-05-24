@@ -78,6 +78,9 @@ pub struct SessionResult {
     /// Attributes disclosed by the irma client to the server
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub disclosed: Vec<Vec<DisclosedAttribute>>,
+
+    #[serde(rename = "nextSession")]
+    pub next_session: Option<SessionToken>,
     /// The full signature, if this was a signing session, as parsed json.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub signature: Option<serde_json::Value>,
@@ -130,6 +133,7 @@ mod tests {
             }]],
             proof_status: Some(ProofStatus::Valid),
             token: SessionToken("ELMExi5iauWYHzbH7gwU".into()),
+            next_session: None,
             signature: None,
         };
 
@@ -156,6 +160,7 @@ mod tests {
             disclosed: vec![],
             proof_status: None,
             token: SessionToken("ELMExi5iauWYHzbH7gwU".into()),
+            next_session: None,
             signature: None,
         };
 
@@ -183,6 +188,7 @@ mod tests {
             disclosed: vec![],
             proof_status: Some(ProofStatus::Valid),
             token: SessionToken("bVqg9btHRhiMvEWs8axQ".into()),
+            next_session: None,
             signature: None,
         };
 
@@ -276,6 +282,7 @@ mod tests {
             }]],
             proof_status: Some(ProofStatus::Valid),
             token: SessionToken("5bTpPRXctenYGGsZVe3x".into()),
+            next_session: None,
             signature: None,
         };
 
