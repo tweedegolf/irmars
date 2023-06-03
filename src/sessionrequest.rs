@@ -30,7 +30,7 @@ pub enum AttributeRequest {
         /// The required value, if any
         #[serde(skip_serializing_if = "Option::is_none")]
         value: Option<String>,
-        /// Is a no-value result is acceptable?
+        /// Is a no-value result acceptable?
         #[serde(rename = "notNull", skip_serializing_if = "omit_false", default)]
         not_null: bool,
     },
@@ -419,6 +419,16 @@ pub struct ExtendedIrmaRequest {
     pub callback_url: Option<String>,
     /// Inner request
     pub request: IrmaRequest,
+    /// Data about session to start after this one (if any)
+    #[serde(rename = "nextSession", skip_serializing_if = "Option::is_none")]
+    pub next_session: Option<NextSessionData>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
+pub struct NextSessionData {
+    /// URL from which to get the next session after this one
+    pub url: String,
 }
 
 #[cfg(test)]
